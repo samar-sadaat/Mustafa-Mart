@@ -28,7 +28,6 @@ function App() {
         dispatch(setUser(res.data.user));
 
       } catch (err) {
-        dispatch(stopLoading());
         console.log("Not logged in");
       }
     };

@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/createProduct", uploadProductImages, resizeProductImages, createProduct);
 
 // Read
-router.get("/", getProducts);
+router.get("/all-products", getProducts);
 router.get("/:id", getProductById);
 
 // Update (optional max 6 new images)

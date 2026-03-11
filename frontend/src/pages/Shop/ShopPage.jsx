@@ -12,7 +12,7 @@ export default function ShopPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get("/product");
+        const res = await api.get("/product/all-products");
         setProducts(res.data.products || []);
       } catch (e) {
         setProducts([]);
