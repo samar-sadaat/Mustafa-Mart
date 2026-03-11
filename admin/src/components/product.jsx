@@ -13,7 +13,7 @@ export default function AdminCreateProduct() {
         stock: "",
     });
 
-    const [files, setFiles] = useState([]); // File[]
+    const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const previews = useMemo(
@@ -56,6 +56,8 @@ export default function AdminCreateProduct() {
         if (!form.title.trim()) return "Title is required";
         if (form.price === "" || form.price === null) return "Price is required";
         if (Number.isNaN(Number(form.price))) return "Price must be a number";
+        if (!form.stock || form.stock === "not selected") return "Please select stock status";
+        if (files.length === 0) return "Please select at least 1 product image";
         return null;
     };
 
@@ -78,7 +80,7 @@ export default function AdminCreateProduct() {
             // IMPORTANT: must match multer field name (commonly "images")
             files.forEach((f) => fd.append("images", f));
 
-            const res = await api.post("/products/createProduct", fd, {
+            const res = await api.post("/product/createProduct", fd, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
@@ -86,7 +88,7 @@ export default function AdminCreateProduct() {
             const data = res?.data;
 
             if (data?.success) {
-                toast.success("✅ Product created successfully");
+                toast.success("Product created successfully");
                 setForm({ title: "", price: "", description: "", category: "", stock: "" });
                 setFiles([]);
             } else {
@@ -174,6 +176,7 @@ export default function AdminCreateProduct() {
                                     disabled={loading}
                                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-900 outline-none focus:border-slate-400"
                                 >
+                                    <option value="">Not Selected</option>
                                     <option value="In Stock">In Stock</option>
                                     <option value="Stock out">Stock out</option>
                                 </select>
