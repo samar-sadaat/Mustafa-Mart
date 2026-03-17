@@ -87,6 +87,16 @@ const validationSchema = Yup.object({
     }),
 });
 
+
+const capitalizeWords = (text) => {
+  if (!text) return "-";
+  return text
+    .replaceAll("_", " ")
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
 export default function Profile() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
@@ -116,8 +126,8 @@ export default function Profile() {
       phone: user.phone || "",
       gender: user.gender || "Not Selected",
       dob: user.dob ? new Date(user.dob).toISOString().slice(0, 10) : "",
-      addressLine1: user.address?.line1 || "",
-      addressLine2: user.address?.line2 || "",
+      addressLine1: user.address?.area || "",
+      addressLine2: user.address?.city || "",
     },
     validationSchema,
     validateOnChange: true,
@@ -126,8 +136,8 @@ export default function Profile() {
       setLoading(true);
       try {
         const addressObj = {
-          line1: values.addressLine1 || "",
-          line2: values.addressLine2 || "",
+          area: values.addressLine1 || "",
+          city: values.addressLine2 || "",
         };
 
         let res;
@@ -346,9 +356,9 @@ export default function Profile() {
                     onChange={formik.handleChange}
                     className="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400/60"
                   >
-                    <option className="bg-slate-950" value="Not Selected">Not Selected</option>
-                    <option className="bg-slate-950" value="Male">Male</option>
-                    <option className="bg-slate-950" value="Female">Female</option>
+                    <option className="bg-slate-950" value="not selected">Not Selected</option>
+                    <option className="bg-slate-950" value="male">Male</option>
+                    <option className="bg-slate-950" value="female">Female</option>
                   </select>
                 </div>
               </div>

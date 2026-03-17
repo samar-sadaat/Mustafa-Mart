@@ -4,7 +4,8 @@ import { useDispatch } from "react-redux";
 import { setUser } from "../../store/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../../api/api";
-
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 export default function Signin() {
   const dispatch = useDispatch();
@@ -12,54 +13,71 @@ export default function Signin() {
   const [showPass, setShowPass] = useState(false);
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ email: "", password: "" });
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validateOnChange: true,
+    validateOnBlur: true,
+    validationSchema: Yup.object({
+      email: Yup.string()
+        .matches(
+          /^[a-zA-Z][a-zA-Z0-9._%+-]*@(gmail|yahoo|hotmail)\.com$/,
+          "Enter valid email address"
+        )
+        .required("Email is required"),
+      password:  Yup.string()
+          .min(6, "Password must be at least 6 characters")
+          .required("Password is required"),
+    }),
+    onSubmit: async (values) => {
+      setLoading(true);
+      try {
+        const res = await api.post("/user/signin", {
+          email: values.email.trim(),
+          password: values.password,
+        });
 
-  const onChange = (e) =>
-    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+        dispatch(setUser(res.data.userData));
+        toast.success(res.data.message || "Signed in");
+        navigate("/");
+      } catch (err) {
+        toast.error(
+          err?.response?.data?.message || err.message || "Signin failed"
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+  });
 
-  const submit = async (e) => {
-    e.preventDefault();
-
-    if (!form.email.trim()) return toast.error("Email is required");
-    if (!form.password) return toast.error("Password is required");
-
-    setLoading(true);
-    try {
-      const res = await api.post("/user/signin", {
-        email: form.email.trim(),
-        password: form.password,
-      });
-
-      dispatch(setUser(res.data.userData));
-
-      toast.success(res.data.message || "Signed in");
-
-      // navigate('/user-profile')
-      navigate('/')
-    } catch (err) {
-      toast.error(err?.response?.data?.message || err.message || "Signin failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const inputClass = (field) =>
+    `mt-2 w-full rounded-xl bg-black/30 border px-4 py-3 text-white placeholder:text-white/30 outline-none transition ${
+      formik.touched[field] && formik.errors[field]
+        ? "border-red-500 focus:ring-2 focus:ring-red-500/20"
+        : "border-white/10 focus:border-purple-400/60 focus:ring-2 focus:ring-purple-500/20"
+    }`;
 
   return (
     <div className="min-h-screen bg-[#070A14] relative overflow-hidden">
       <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-purple-600/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-76 w-96 rounded-full bg-blue-600/20 blur-3xl" />
 
-      <div className="mx-auto max-w-6xl px-4">
+      <div className="mx-auto max-w-6xl px-4 py-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="h-3 w-3 rounded-full bg-purple-500 shadow-[0_0_25px_rgba(168,85,247,0.8)]" />
             <div>
               <p className="text-sm text-white/60">Mustafa Mart</p>
-              <h1 className="text-white font-semibold tracking-tight">Welcome back</h1>
+              <h1 className="text-white font-semibold tracking-tight">
+                Welcome back
+              </h1>
             </div>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8 mt-8 items-center">
           <div className="text-white">
             <h2 className="mt-5 text-4xl sm:text-5xl font-extrabold leading-tight">
               Your online mart for{" "}
@@ -67,7 +85,8 @@ export default function Signin() {
             </h2>
 
             <p className="mt-4 text-white/70 max-w-xl">
-              Sign in to browse products, add to cart, and checkout quickly — all in one place.
+              Sign in to browse products, add to cart, and checkout quickly —
+              all in one place.
             </p>
 
             <div className="mt-8 grid grid-cols-3 gap-4 max-w-lg">
@@ -93,16 +112,23 @@ export default function Signin() {
                 Enter your email and password to continue
               </p>
 
-              <form onSubmit={submit} className="mt-6 space-y-4">
+              <form onSubmit={formik.handleSubmit} className="mt-6 space-y-4">
                 <div>
                   <label className="text-xs text-white/60">Email</label>
                   <input
                     name="email"
-                    value={form.email}
-                    onChange={onChange}
-                    placeholder="you@example.com"
-                    className="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 text-white placeholder:text-white/30 outline-none focus:border-purple-400/60 focus:ring-2 focus:ring-purple-500/20"
+                    type="text"
+                    value={formik.values.email}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="you@gmail.com"
+                    className={inputClass("email")}
                   />
+                  {formik.touched.email && formik.errors.email && (
+                    <p className="mt-1 text-xs text-red-400">
+                      {formik.errors.email}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -111,10 +137,15 @@ export default function Signin() {
                     <input
                       name="password"
                       type={showPass ? "text" : "password"}
-                      value={form.password}
-                      onChange={onChange}
+                      value={formik.values.password}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
                       placeholder="••••••••"
-                      className="w-full rounded-xl bg-black/30 border border-white/10 pl-4 pr-14 py-3 text-white placeholder:text-white/30 outline-none focus:border-purple-400/60 focus:ring-2 focus:ring-purple-500/20"
+                      className={`w-full rounded-xl bg-black/30 border pl-4 pr-14 py-3 text-white placeholder:text-white/30 outline-none transition ${
+                        formik.touched.password && formik.errors.password
+                          ? "border-red-500 focus:ring-2 focus:ring-red-500/20"
+                          : "border-white/10 focus:border-purple-400/60 focus:ring-2 focus:ring-purple-500/20"
+                      }`}
                     />
                     <button
                       type="button"
@@ -124,11 +155,16 @@ export default function Signin() {
                       {showPass ? "Hide" : "Show"}
                     </button>
                   </div>
+                  {formik.touched.password && formik.errors.password && (
+                    <p className="mt-1 text-xs text-red-400">
+                      {formik.errors.password}
+                    </p>
+                  )}
                 </div>
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !formik.isValid}
                   className="w-full rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 transition shadow-[0_0_25px_rgba(168,85,247,0.35)]"
                 >
                   {loading ? "Signing in..." : "Sign in"}
@@ -136,7 +172,9 @@ export default function Signin() {
 
                 <p className="text-center text-sm text-white/60">
                   Don’t have an account?{" "}
-                  <Link to="/signup">Create one</Link>
+                  <Link to="/signup" className="text-purple-300 hover:text-purple-200">
+                    Create one
+                  </Link>
                 </p>
               </form>
             </div>

@@ -10,3 +10,11 @@ export const store = configureStore({
     cart: cartReducer,
   },
 });
+
+store.subscribe(() => {
+  try {
+    localStorage.setItem("cart", JSON.stringify(store.getState().cart));
+  } catch (error) {
+    console.error("Failed to save cart:", error);
+  }
+});

@@ -5,6 +5,7 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
+  deleteProductImages,
 } from "../controllers/productController.js";
 
 import { uploadProductImages, resizeProductImages } from "../middlewares/multer.js";
@@ -19,9 +20,10 @@ router.get("/all-products", getProducts);
 router.get("/:id", getProductById);
 
 // Update (optional max 6 new images)
-router.patch("/:id", uploadProductImages, resizeProductImages, updateProduct);
+router.put("/update/:id", uploadProductImages, resizeProductImages, updateProduct);
 
 // Delete
 router.delete("/:id", deleteProduct);
+router.post("/delete-selected-images/:id", deleteProductImages);
 
 export default router;

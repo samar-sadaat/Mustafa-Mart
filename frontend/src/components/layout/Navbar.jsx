@@ -22,6 +22,15 @@ function NavItem({ to, children }) {
   );
 }
 
+const capitalizeWords = (text) => {
+  if (!text) return "-";
+  return text
+    .replaceAll("_", " ")
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
 export default function Navbar() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
@@ -62,11 +71,6 @@ export default function Navbar() {
 
           {/* If NOT logged in */}
           {!user && (
-            <NavItem to="/signin">Get Started</NavItem>
-          )}
-
-          {/* If logged in */}
-          {user && (
             <>
               <Link
                 to="/cart"
@@ -74,10 +78,18 @@ export default function Navbar() {
               >
                 Cart
                 <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs">
-                  { count }
+                  {count}
                 </span>
               </Link>
 
+              <NavItem to="/signin">Get Started</NavItem>
+            </>
+
+          )}
+
+          {/* If logged in */}
+          {user && (
+            <>
               <div className="relative">
 
                 {/* Avatar button */}
@@ -93,7 +105,7 @@ export default function Navbar() {
                     />
                   ) : (
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-500 text-xs font-bold text-white">
-                      {user.name?.charAt(0)}
+                      {capitalizeWords(user.name?.charAt(0))}
                     </div>
                   )}
 

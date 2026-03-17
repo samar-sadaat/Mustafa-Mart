@@ -6,7 +6,14 @@ import Container from "../../components/layout/Container";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../store/cartSlice";
 
-
+const capitalizeWords = (text) => {
+  if (!text) return "-";
+  return text
+    .replaceAll("_", " ")
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
 
 function money(n) {
   return new Intl.NumberFormat(undefined, { style: "currency", currency: "PKR" }).format(n);
@@ -64,9 +71,9 @@ export default function ProductPage() {
             ← Back to shop
           </Link>
 
-          <h1 className="mt-3 text-3xl font-extrabold">{p.title}</h1>
+          <h1 className="mt-3 text-3xl font-extrabold">{capitalizeWords(p.title)}</h1>
           <div className="mt-2 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs">
-            {p.category}
+            {capitalizeWords(p.category)}
           </div>
 
           <div className="mt-4 text-2xl font-extrabold">{money(p.price)}</div>

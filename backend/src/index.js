@@ -5,6 +5,11 @@ import connectDB from "./config/mongodb.js";
 import userRoutes from "./routes/userRoute.js";
 import productRoutes from "./routes/productRoute.js";
 import cookieParser from "cookie-parser";
+import orderRoutes from "./routes/orderRoute.js"
+import adminRoutes from "./routes/adminRoute.js";
+import path from "path";
+import { ensureUploadDirs } from "./utils/uploadtoDir.js";
+
 // app config
 const app = express()
 const port = process.env.PORT
@@ -15,6 +20,10 @@ connectDB()
 // middlewares
 app.use(express.json());
 app.use(cookieParser());
+
+ensureUploadDirs();
+
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // CORS
 const allowedOrigins = [
@@ -38,6 +47,8 @@ app.use(cors({
 // api endpoints
 app.use("/user", userRoutes);
 app.use("/product", productRoutes);
+app.use("/order", orderRoutes);
+app.use("/admin", adminRoutes);
 
 
 app.get("/", (req, res) => {

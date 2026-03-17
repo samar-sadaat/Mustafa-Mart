@@ -3,6 +3,15 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../../store/cartSlice";
 
 
+const capitalizeWords = (text) => {
+  if (!text) return "-";
+  return text
+    .replaceAll("_", " ")
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
 function money(n) {
   return new Intl.NumberFormat(undefined, { style: "currency", currency: "PKR" }).format(n);
 }
@@ -11,7 +20,6 @@ export default function ProductCard({ p }) {
   const dispatch = useDispatch();
 
   const handleAdd = (p) => {
-  console.log("p------> (1)", p);
     dispatch(
       addToCart({
         productId: p._id,
@@ -39,10 +47,10 @@ export default function ProductCard({ p }) {
       <div className="space-y-3 p-4">
         <div className="flex items-start justify-between gap-3">
           <Link to={`/product/${p._id}`} className="text-base font-extrabold hover:underline">
-            {p.title}
+            {capitalizeWords(p.title)}
           </Link>
           <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs">
-            {p.category}
+            {capitalizeWords(p.category)}
           </span>
         </div>
 

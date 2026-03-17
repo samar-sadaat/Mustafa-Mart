@@ -2,23 +2,28 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel.js";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
+import { saveImageLocally } from "../utils/saveToLocally.js";
 
-const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
 export const signup = async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
+
     if (!firstName || !lastName || !email || !password)
       return res.status(400).json({ success: false, message: "firstName and lastName, email, password required" });
+    const emailNormal = email.toLowerCase();
 
-    const exists = await userModel.findOne({ email }).select("-password");;
+    const exists = await userModel.findOne({ email: emailNormal }).select("-password");;
     if (exists) return res.status(409).json({ success: false, message: "Email already exists" });
 
     const name = `${firstName} ${lastName}`;
+    const nameNormal = name.toLowerCase();
+
     const hashed = await bcrypt.hash(password, 10);
     const user = await userModel.create({
-      name,
-      email,
+      name: nameNormal,
+      email: emailNormal,
       password: hashed,
     });
 
@@ -41,7 +46,9 @@ export const signin = async (req, res) => {
     if (!email || !password)
       return res.status(400).json({ success: false, message: "email and password required" });
 
-    const user = await userModel.findOne({ email });
+    const emailNormal = email.toLowerCase();
+    
+    const user = await userModel.findOne({ email: emailNormal});
     if (!user) return res.status(401).json({ success: false, message: "Invalid credentials" });
 
     const ok = await bcrypt.compare(password, user.password);
@@ -57,7 +64,7 @@ export const signin = async (req, res) => {
       httpOnly: true, // cannot be accessed by JS
       secure: false, // true in production (https)
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 4 * 60 * 60 * 1000,
     });
 
     return res.json({
@@ -86,8 +93,8 @@ export const updateProfile = async (req, res) => {
     const { firstName, lastName } = req.body;
 
     if (firstName || lastName) {
-      const f = firstName?.trim() || "";
-      const l = lastName?.trim() || "";
+      const f = firstName?.trim().toLowerCase() || "";
+      const l = lastName?.trim().toLowerCase() || "";
       updates.name = `${f} ${l}`.trim();
     }
 
@@ -99,7 +106,7 @@ export const updateProfile = async (req, res) => {
     }
 
     if (req.body.gender !== undefined) {
-      updates.gender = req.body.gender;
+      updates.gender = req.body.gender.toLowerCase();
     }
 
     /* ========================
@@ -120,23 +127,27 @@ export const updateProfile = async (req, res) => {
        4️⃣ Address (Already Object)
     ======================== */
     if (req.body.address !== undefined) {
-      const { line1 = "", line2 = "" } = req.body.address;
+      const { area = "", city = "" } = req.body.address;
 
       updates.address = {
-        line1,
-        line2,
+        area,
+        city,
       };
     }
 
     /* ========================
        5️⃣ Profile Image
     ======================== */
+    // if (req.file) {
+    //   const result = await uploadToCloudinary(
+    //     req.file.buffer,
+    //     "mustafa-mart/users"
+    //   );
+    //   updates.image = result.secure_url;
+    // }
     if (req.file) {
-      const result = await uploadToCloudinary(
-        req.file.buffer,
-        "mustafa-mart/users"
-      );
-      updates.image = result.secure_url;
+      const imagePath = await saveImageLocally(req.file.buffer, "profilePics");
+      updates.image = imagePath;
     }
 
     if (Object.keys(updates).length === 0) {
@@ -165,7 +176,7 @@ export const updateProfile = async (req, res) => {
     });
 
   } catch (err) {
-    
+
     return res.status(500).json({
       success: false,
       message: err.message,

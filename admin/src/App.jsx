@@ -1,15 +1,10 @@
-import AdminCreateProduct from "./components/product"
 import { Routes, Route } from "react-router-dom";
+import AdminRoutes from "./AdminRoutes";
 
-function App() {
-
+export default function App() {
   return (
-    <>
-      <Routes>
-        <Route path="/admin" element={<AdminCreateProduct />} />
-      </Routes>
-    </>
-  )
+    <Routes>
+      <Route path="/admin/*" element={<AdminRoutes />} />
+    </Routes>
+  );
 }
-
-export default App
