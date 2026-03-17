@@ -12,11 +12,20 @@ const capitalizeWords = (text) => {
     .join(" ");
 };
 
+const getImageUrl = (path) => {
+  if (!path) return "/no-image.png";
+
+  if (path.startsWith("http")) return path;
+
+  return `${import.meta.env.VITE_BACKEND_URL}${path}`;
+};
+
 function money(n) {
   return new Intl.NumberFormat(undefined, { style: "currency", currency: "PKR" }).format(n);
 }
 
 export default function ProductCard({ p }) {
+  console.log("p------> (1)", `${p.images}`);
   const dispatch = useDispatch();
 
   const handleAdd = (p) => {
@@ -34,12 +43,11 @@ export default function ProductCard({ p }) {
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] shadow-[0_18px_50px_rgba(0,0,0,0.25)]">
       <Link to={`/product/${p._id}`}>
         <img
-          src={
-            Array.isArray(p.images)
-              ? p.images[0]
-              : p.images || "/no-image.png"
-          }
+          src={getImageUrl(
+            Array.isArray(p.images) ? p.images[0] : p.images
+          )}
           alt={p.title}
+          onError={(e) => (e.target.src = "/no-image.png")}
           className="h-48 w-full object-cover"
         />
       </Link>

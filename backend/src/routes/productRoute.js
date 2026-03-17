@@ -23,7 +23,7 @@ router.get("/:id", getProductById);
 router.put("/update/:id", uploadProductImages, resizeProductImages, updateProduct);
 
 // Delete
-router.delete("/:id", deleteProduct);
+router.delete("/delete/:id", deleteProduct);
 router.post("/delete-selected-images/:id", deleteProductImages);
 
 export default router;

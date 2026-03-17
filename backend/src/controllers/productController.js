@@ -34,8 +34,8 @@ export const createProduct = async (req, res) => {
       );
     }
 
-    const titleNormal = title.tolowercase();
-    const categoryNormal = category.tolowercase();
+    const titleNormal = title.toLowerCase();
+    const categoryNormal = category.toLowerCase();
 
 
     const product = await productModel.create({

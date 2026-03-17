@@ -21,8 +21,8 @@ const productSchema = new mongoose.Schema(
     },
     stock: {
       type: String,
-      enum: ["in Stock", "stock out"],
-      default: "in Stock",
+      enum: ["in stock", "stock out"],
+      default: "in stock",
     },
   },
   {

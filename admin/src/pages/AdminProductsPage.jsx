@@ -135,7 +135,7 @@ export default function AdminProductsPage() {
         });
         toast.success("Product updated successfully");
       } else {
-        await apiRequest("/product/create", {
+        await apiRequest("/product/createProduct", {
           method: "POST",
           body: fd,
         });
